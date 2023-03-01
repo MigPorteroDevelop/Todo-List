@@ -4,12 +4,14 @@ export default {
     show: {
       default: false
     }
-  }
+  },
+
+  emits: ['close'],
 }
 </script>
 
 <template>
-  <div v-if="show" class="modal">
+  <div ref="modal" v-show="show" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <slot name="header" />
