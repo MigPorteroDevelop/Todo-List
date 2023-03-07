@@ -5,6 +5,8 @@ import AddTodoForm from "./components/AddTodoForm.vue";
 import Todo from "./components/Todo.vue";
 import Modal from "./components/Modal.vue";
 import Btn from "./components/Btn.vue";
+import axios from "axios";
+import Spinner from "./components/spinner.vue"
 
 export default {
   components: {
@@ -14,13 +16,19 @@ export default {
     Todo,
     Modal,
     Btn,
+    Spinner
   },
 
   data() {
     return {
       todoTitle: "",
       todos: [],
-      showAlert: false,
+      alert:{
+        show: false,
+        message: ""
+      },
+      isLoading: false,
+      isPostingTodo: false,
       editTodoForm: {
         show: false,
         todo: {
@@ -30,27 +38,42 @@ export default {
       },
     };
   },
-  created(){
+  created() {
+    console.log(import.meta.env.VITE_API_URL);
     this.fetchTodos();
   },
 
   methods: {
-    async fetchTodos(){
-      const res = await fetch('http://localhost:8080/todos'); 
-      const todos = await res.json();
-
-      console.log(todos);
+    async fetchTodos() {
+      this.isLoading = true;
+      try {
+        const res = await axios.get('http://localhost:8080/todos');
+        this.todos = res.data;
+      }catch(e){
+        this.showAlert("There was a problem loading the list", "info");
+      }
+      this.isLoading = false;
+    },
+    showAlert(message, type = ""){
+      this.alert.show = true;
+      this.alert.message = message;
+      this.alert.type = type;
     },
 
-    addTodo(title) {
+    async addTodo(title) {
       if (title === "") {
-        this.showAlert = true;
+        this.showAlert("Todo title is required", "danger");
         return;
       }
-      this.todos.push({
-        title,
-        id: Math.floor(Math.random() * 1000),
+
+      this.isPostingTodo = true;
+      const res = await axios.post('http://localhost:8080/todos', {
+        title
       });
+      this.isPostingTodo = false;
+
+      console.log(res.data);
+      this.todos.push(res.data);
     },
     showEditTodoForm(todo) {
       this.editTodoForm.show = true;
@@ -66,8 +89,9 @@ export default {
       // hides the edit form
       this.editTodoForm.show = false;
     },
-    deleteTodo(id) {
-      this.todos = this.todos.filter((todo) => todo.id !== id);
+    async deleteTodo(id) {
+      await axios.delete(`http://localhost:8080/todos/${id}`);
+      this.fetchTodos();
     },
   },
 };
@@ -80,56 +104,71 @@ export default {
     <Modal 
     :show="editTodoForm.show" 
     @close="editTodoForm.show = false">
-      <template #header>
+      <template v-slot:header>
         <h2>Edit Todo</h2>
       </template>
 
-      <template #content>
+      <template v-slot:content>
         <form class="edit-todo-form">
           <div><label>Todo Title</label></div>
           <input type="text" v-model="editTodoForm.todo.title" />
         </form>
       </template>
 
-      <template #footer>
+      <template v-slot:footer>
         <div class="edit-todo-modal-footer">
-          <Btn class="edit-todo-submit-btn" @click="updateTodo">Submit</Btn>
-          <Btn type="danger" @click="editTodoForm.show = false">Close</Btn>
+          <Btn class="edit-todo-submit-btn" 
+          @click="updateTodo">Submit</Btn>
+          <Btn type="danger" 
+          @click="editTodoForm.show = false">Close</Btn>
         </div>
       </template>
     </Modal>
 
-    <Alert
-      message="Todo title is required"
-      :show="showAlert"
-      @close="showAlert = false"
-    />
+    <Alert 
+    :message="alert.message" 
+    :show="alert.show" 
+    :type="alert.type"
+    @close="alert.show = false" />
+
     <section>
-      <AddTodoForm @submit="addTodo" />
-    </section>
-    <section>
-      <Todo
-        v-for="todo in todos"
-        :key="todo.id"
-        :title="todo.title"
-        @delete="deleteTodo(todo.id)"
-        @edit="showEditTodoForm(todo)"
+      <AddTodoForm 
+      @submit="addTodo" 
+      :isLoading="isPostingTodo"
       />
+    </section>
+
+    <section>
+      <Spinner v-if="isLoading" class="spinner" />
+      <div v-else>
+        <Todo
+          v-for="todo in todos" 
+          :key="todo.id" 
+          :title="todo.title" 
+          @delete="deleteTodo(todo.id)"
+          @edit="showEditTodoForm(todo)" />
+      </div>
     </section>
   </main>
 </template>
 
 <style scoped>
-.edit-todo-form > input {
+.spinner{
+  margin: auto;
+  margin-top: 10rem;
+}
+.edit-todo-form>input {
   width: 100%;
   height: 30px;
   border: 1px solid var(--accent-color);
 }
+
 .edit-todo-modal-footer {
   display: flex;
   justify-content: end;
   padding: 10px;
 }
+
 .edit-todo-submit-btn {
   margin-right: 5px;
 }

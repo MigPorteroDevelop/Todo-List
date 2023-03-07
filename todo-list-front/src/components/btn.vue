@@ -37,7 +37,10 @@ export default {
 </script>
 
 <template>
-  <button :style="{ backgroundColor }" @click.prevent="$emit('click')" :class="{ circle: applyCircleClass }">
+  <button 
+  :style="{ backgroundColor }" 
+  @click.prevent="$emit('click')" 
+  :class="{ circle: applyCircleClass }">
     <!--This is where you put the things you send from outside-->
     <slot />
   </button>

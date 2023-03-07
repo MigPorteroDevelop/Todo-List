@@ -1,9 +1,19 @@
 <script>
 import Btn from "./btn.vue";
+import Spinner from "./spinner.vue";
 
 export default {
   components: {
     Btn,
+    Spinner
+},
+  props:{
+      isLoading:{
+      disabled:{
+        default: false,
+        type: Boolean
+      }
+    }
   },
   data() {
     return {
@@ -18,8 +28,12 @@ export default {
   <form class="add-todo-form">
     <input v-model="todoTitle" type="text" placeholder="Todo Title" />
     <div>
-      <Btn class="btn" @click="$emit('submit', todoTitle)">
-        Add Todo
+      <Btn
+      class="btn" 
+      :disabled="isLoading"
+      @click="$emit('submit', todoTitle)">
+        <Spinner v-if="isLoading" />
+        <span v-else> Add Todo</span>
       </Btn>
     </div>
   </form>
