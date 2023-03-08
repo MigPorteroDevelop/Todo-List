@@ -5,8 +5,8 @@
 <style scoped>
 .spinner {
     border: 4px solid rgb(43, 255, 0);
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border-left-color: rgb(255, 0, 221);
     animation: spin 1s ease infinite;

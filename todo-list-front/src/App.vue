@@ -39,7 +39,6 @@ export default {
     };
   },
   created() {
-    console.log(import.meta.env.VITE_API_URL);
     this.fetchTodos();
   },
 
@@ -47,7 +46,7 @@ export default {
     async fetchTodos() {
       this.isLoading = true;
       try {
-        const res = await axios.get('http://localhost:8080/todos');
+        const res = await axios.get('/api/todos');
         this.todos = res.data;
       }catch(e){
         this.showAlert("There was a problem loading the list", "info");
@@ -67,7 +66,7 @@ export default {
       }
 
       this.isPostingTodo = true;
-      const res = await axios.post('http://localhost:8080/todos', {
+      const res = await axios.post('/api/todos', {
         title
       });
       this.isPostingTodo = false;
@@ -90,7 +89,7 @@ export default {
       this.editTodoForm.show = false;
     },
     async deleteTodo(id) {
-      await axios.delete(`http://localhost:8080/todos/${id}`);
+      await axios.delete(`/api/todos/${id}`);
       this.fetchTodos();
     },
   },

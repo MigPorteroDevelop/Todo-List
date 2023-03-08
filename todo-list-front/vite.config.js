@@ -11,18 +11,20 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-    server: {
-      hmr: {
-        protocol: 'ws',
-        host: 'localhost',
-        port: 3000,
-      },
-      fs: {
-        strict: false,
-        allow: ['..'],
-      },
-      headers: {
-        'Content-Security-Policy': "script-src 'self' 'unsafe-inline' 'unsafe-eval';",
-      },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, '')
+      }
     },
+    fs: {
+      strict: false,
+      allow: ['..'],
+    },
+    headers: {
+      'Content-Security-Policy': "script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+    },
+  },
 })
